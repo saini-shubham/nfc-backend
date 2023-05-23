@@ -1,7 +1,7 @@
 const mongoose = require('mongoose')
 const validator = require('validator')
-mongoose.connect('mongodb+srv://hmps-services:Saini1323@cluster0.xnfmumx.mongodb.net/?retryWrites=true&w=majority', {
-//mongoose.connect('mongodb://127.0.0.1:27017/nfc-tag', {
+//mongoose.connect('mongodb+srv://hmps-services:Saini1323@cluster0.xnfmumx.mongodb.net/?retryWrites=true&w=majority', {
+mongoose.connect('mongodb://127.0.0.1:27017/nfc-tag', {
    useNewUrlParser: true,
    //useCreateIndex: true
    //useCreateIndex: true, //make this true

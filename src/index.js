@@ -17,7 +17,9 @@ app.use(express.json());
 app.use(userRouter)
 app.use(tagRouter)
 
-
+// app.get('*',function(req,res){
+//   res.sendFile('machine path where index.html exists')
+// })
 
 
 app.listen(port, () => {
