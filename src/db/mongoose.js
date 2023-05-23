@@ -7,7 +7,7 @@ mongoose.connect('mongodb+srv://hmps-services:Saini1323@cluster0.xnfmumx.mongodb
    //useCreateIndex: true, //make this true
    // useNewUrlParser: true,
     //useUnifiedTopology: true
-}).then(()=>console.log("connected to db successfully")).catch((err)=>console.log(err))
+}).then(()=>console.log("connected to db sucessfully")).catch((err)=>console.log(err))
 
 // const Task = mongoose.model('Task', {
 //     description: {
