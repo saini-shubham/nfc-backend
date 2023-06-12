@@ -43,7 +43,7 @@ router.post("/createUser", verifyToken, async (req, res) => {
       });
     } catch (error) {
       console.error("Error saving user:", error);
-      res.status(500).send(error.message);
+      res.status(403).send(error.message);
     }
   } else {
     return res.status(403).send("Not Authorized to create user");

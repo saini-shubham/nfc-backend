@@ -55,20 +55,17 @@ router.post("/tagRegister", verifyToken, async (req, res) => {
 //     });
 // });
 
-// POST request to mark a tag scnned and store the details in "tagReports" collection
-router.post("/tags/:id", verifyToken, async (req, res) => {
+// GET request to mark a tag scnned and store the details in "tagReports" collection
+router.get("/tags/:id", verifyToken, async (req, res) => {
   const { userId, userType } = req.user;
+  console.log(userId, userType);
   if (
     userType === "scanner" ||
     userType === "admin" ||
     userType === "superAdmin"
   ) {
-    const { scanned, userId, userType } = req.body;
+    //const { scanned, userId, userType } = req.body;
     try {
-      // let { token } = req.headers;
-      // token = jwt.verify(token, config.secret);
-      //try to populate TagReport once a day from Tag
-
       const tagReportData = new TagReport({});
       const tag = await Tag.findOne({ tagId: req.params.id });
       console.log(tag, req.params.id);
@@ -91,40 +88,15 @@ router.post("/tags/:id", verifyToken, async (req, res) => {
       await TagReport.findOneAndUpdate(
         { tagId: req.params.id, date: new Date().toLocaleDateString() },
         //{ scanned: scanned, scannerId: userId }
-        { scanned: scanned,  userId }
+        { scanned: true, userId }
       );
       res.status(200).json({
         message: "Scanned Successfully",
       });
-
-      // if (
-      //   isTagScanned !== null &&
-      //   isTagScanned.scanned &&
-      //   isTagScanned.date === new Date().toLocaleDateString()
-      //   //isTagScanned.date.toString() === '14/5/2023'
-      // )
-      //   return res.status(200).json({ message: "Already Scanend" });
-      // var today = new Date();
-      // const presentDate = new Date().toLocaleDateString();
-      // const presentTime = today.getHours() + ":" + today.getMinutes();
-      // const report = {
-      //   //studentId: tag.id,
-      //   scannerId: userId,
-      //   tagId: tag.tagId,
-      //   name: tag.name,
-      //   houseNo: tag.houseNo,
-      //   locality: tag.locality,
-      //   city: tag.city,
-      //   scanned: scanned,
-      //   date: presentDate,
-      //   time: presentTime,
-      // };
-      // const tagReportCollection = new TagReport(report);
-      // await tagReportCollection.save();
-      // res.json(report);
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: "Internal server error" });
+      //res.status(500).send(error)
     }
   } else {
     return res.status(403).send("Unauthorised");
@@ -166,15 +138,17 @@ router.get("/tags/byCity", verifyToken, (req, res) => {
 
 //for visitor: to get the count of tag in the given city
 //router.get("/students/:city/present/count", (req, res) => {
-router.post("/tags/count/:city", verifyToken, (req, res) => {
+router.post("/tags/count", verifyToken, (req, res) => {
   const { userId, userType } = req.user;
   if (
     userType === "visitor" ||
     userType === "admin" ||
     userType === "superAdmin"
   ) {
-    const cityName = req.params.city;
-    const date = req.body;
+    //const cityName = req.params.city;
+    console.log(userId, userType);
+    const date = req.body.date;
+    const cityName = req.body.cityName;
     console.log(cityName, date.date);
     async function getDocumentCount(collectionName) {
       const count = await collectionName.countDocuments();
@@ -268,6 +242,42 @@ router.post("/tagDetailsByCity", verifyToken, async (req, res) => {
         .json({ message: "No tags found for the given date" });
     }
     res.status(200).json(tagsByCityAndDate);
+  } else {
+    return res.status(403).send("Unauthorised");
+  }
+});
+
+router.post("/tags/generate-pdf", verifyToken, (req, res) => {
+  const { userId, userType } = req.user;
+  if (userType === "admin" || userType === "superAdmin") {
+    try {
+      const {date} = req.body; // Assuming the date is passed as "?date=YYYY-MM-DD" in the URL
+      // Retrieve data from the TagReport collection based on the date (use your database-specific code here)
+      const tagReports = new TagReport.find({ date: date }); // Replace this with your actual code to fetch data from the collection
+      // Generate the PDF using the retrieved data
+      const doc = new PDFDocument();
+      doc.pipe(res); // Stream the generated PDF as a response
+      doc.fontSize(18).text(`Tag Report for ${date}`, { align: "center" });
+      doc.moveDown();
+      tagReports.forEach((report, index) => {
+        doc.text(`S.No: ${index + 1}`);
+        doc.text(
+          `House Details: ${report.name} ${report.houseNo} `
+        );
+        doc.text(`City:${report.locality} ${report.city}`);
+        doc.text(
+          `Timestamp: ${
+            report.scanned === true ? report.time + report.date : "--"
+          }`
+        );
+        //doc.text(`Scanned By:${report.userId} `);
+        //doc.text(`: ${report.time}`);
+        doc.moveDown();
+      });
+      doc.end();
+    } catch (err) {
+      return res.status(404).json({ error: err });
+    }
   } else {
     return res.status(403).send("Unauthorised");
   }

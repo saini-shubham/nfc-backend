@@ -1,4 +1,5 @@
 const express = require("express");
+//const cors = require("cors");
 require("./db/mongoose");
 const Tag = require("./models/tag");
 //const User = require("./models/user");
@@ -12,7 +13,9 @@ var bcrypt = require("bcryptjs");
 const config = require("./config");
 const app = express();
 const port = process.env.PORT || 4000;
-
+// app.use(cors({
+//   origin:'*'
+// }))
 app.use(express.json());
 app.use(userRouter)
 app.use(tagRouter)
